@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 namespace UnityStandardAssets.Characters.FirstPerson
@@ -26,7 +27,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float m_StepInterval;
         [SerializeField] private AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
-        [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
+        [SerializeField] private AudioClip m_LandSound;
+        [SerializeField] public AudioClip m_KeySound;            // the sound played when character touches back on ground.
 
         private Camera m_Camera;
         private bool m_Jump;
@@ -41,6 +43,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float m_NextStep;
         private bool m_Jumping;
         private AudioSource m_AudioSource;
+        private int count;
+
+        public Text countText;
 
         // Use this for initialization
         private void Start()
@@ -55,6 +60,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_Jumping = false;
             m_AudioSource = GetComponent<AudioSource>();
 			m_MouseLook.Init(transform , m_Camera.transform);
+            count = 0; 
+            SetCountText ();
         }
 
 
@@ -255,5 +262,38 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
             body.AddForceAtPosition(m_CharacterController.velocity*0.1f, hit.point, ForceMode.Impulse);
         }
+        void OnTriggerEnter(Collider other) 
+	   {
+		//..and if the game object we intersect has the tag 'Pick Up' assigned to it..
+		    if (other.gameObject.CompareTag ("Pick Up"))
+		    {
+			
+			    other.gameObject.SetActive (false);
+
+                count = count + 1;
+
+			// Run the 'SetCountText()' function (see below)
+			    SetCountText ();
+
+                PlayKeyAudio ();
+
+		    }
+	    }   
+
+        void SetCountText()
+	    {
+		// Update the text field of our 'countText' variable
+		   countText.text = "Keys: " + count.ToString ();
+
+		// Check if our 'count' is equal to or exceeded 12
+
+	    }
+
+        public void PlayKeyAudio()
+        {
+            m_AudioSource.clip = m_KeySound;
+            m_AudioSource.Play();
+        }
+       
     }
 }
